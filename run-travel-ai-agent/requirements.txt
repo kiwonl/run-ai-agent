@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+requests
+google-generativeai
+python-dotenv
+httpx
+asyncio
+google-cloud-logging
+adk
