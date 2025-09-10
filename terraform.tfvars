@@ -8,13 +8,3 @@ region = "us-central1"
 
 # VPC Network ID
 network_id = "gemini-vpc-net"
-
-# VM instance name
-vm_name = "cli-vm"
-
-# VM machine type
-machine_type = "n2-standard-2"
-
-# Source IP ranges for SSH access. For better security, specify your IP range.
-# 예: ["203.0.113.0/24"]
-ssh_source_ranges = ["0.0.0.0/0"]
