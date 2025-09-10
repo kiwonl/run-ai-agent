@@ -11,3 +11,21 @@ output "subnetwork_name" {
   description = "The name of the subnetwork."
   value       = google_compute_subnetwork.default.name
 }
+
+# Output for the service account email
+output "service_account_email" {
+  description = "The email of the created service account."
+  value       = google_service_account.sa.email
+}
+
+# Output for the service account display name
+output "service_account_display_name" {
+  description = "The display name of the created service account."
+  value       = google_service_account.sa.display_name
+}
+
+# Output for the service account account id
+output "service_account_account_id" {
+  description = "The account id of the created service account."
+  value       = google_service_account.sa.account_id
+}

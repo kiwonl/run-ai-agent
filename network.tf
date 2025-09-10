@@ -11,8 +11,8 @@ resource "google_compute_network" "default" {
 # 위에서 생성한 VPC 네트워크 내에 서브넷을 생성합니다.
 # private_ip_google_access = true로 설정하여 외부 IP가 없는 VM에서도 Google API 및 서비스에 비공개로 액세스할 수 있도록 합니다.
 resource "google_compute_subnetwork" "default" {
-  name                     = "vm1-subnet"
-  ip_cidr_range            = "192.168.100.0/24"
+  name                     = var.subnet_name
+  ip_cidr_range            = var.subnet_cidr
   region                   = var.region
   stack_type               = "IPV4_ONLY"
   network                  = google_compute_network.default.id

@@ -8,3 +8,12 @@ region = "us-central1"
 
 # VPC Network ID
 network_id = "gemini-vpc-net"
+
+# Service Account ID
+run_service_account = "my-sa"
+
+# Subnetwork Name
+subnet_name = "vm1-subnet"
+
+# Subnetwork CIDR
+subnet_cidr = "192.168.100.0/24"

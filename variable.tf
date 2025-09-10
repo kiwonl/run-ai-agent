@@ -18,3 +18,24 @@ variable "network_id" {
   description = "The ID of the VPC network."
   default     = "gemini-vpc-net"
 }
+
+# Variable for the service account
+variable "run_service_account" {
+  type        = string
+  description = "The ID of the service account."
+  default     = "my-sa"
+}
+
+# Variable for the subnetwork name
+variable "subnet_name" {
+  type        = string
+  description = "The name of the subnetwork."
+  default     = "vm1-subnet"
+}
+
+# Variable for the subnetwork CIDR
+variable "subnet_cidr" {
+  type        = string
+  description = "The CIDR block for the subnetwork."
+  default     = "192.168.100.0/24"
+}
