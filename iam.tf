@@ -11,3 +11,17 @@ resource "google_project_iam_member" "ai_platform_user" {
   role    = "roles/aiplatform.user"
   member  = "serviceAccount:${google_service_account.sa.email}"
 }
+
+# Cloud Build 서비스 계정에 Cloud Run 관리자 역할을 부여합니다.
+resource "google_project_iam_member" "cloud_build_run_admin" {
+  project = var.project_id
+  role    = "roles/run.admin"
+  member  = "serviceAccount:${data.google_project.project.number}@cloudbuild.gserviceaccount.com"
+}
+
+# Cloud Build 서비스 계정에 서비스 계정 사용자 역할을 부여합니다.
+resource "google_project_iam_member" "cloud_build_service_account_user" {
+  project = var.project_id
+  role    = "roles/iam.serviceAccountUser"
+  member  = "serviceAccount:${data.google_project.project.number}@cloudbuild.gserviceaccount.com"
+}
