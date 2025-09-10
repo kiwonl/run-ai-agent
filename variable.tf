@@ -16,21 +16,21 @@ variable "region" {
 variable "network_id" {
   type        = string
   description = "The ID of the VPC network."
-  default     = "gemini-vpc-net"
+  default     = "run-ai-agent-vpc"
 }
 
 # Variable for the service account
 variable "run_service_account" {
   type        = string
   description = "The ID of the service account."
-  default     = "my-sa"
+  default     = "run-ai-agent-sa"
 }
 
 # Variable for the subnetwork name
 variable "subnet_name" {
   type        = string
   description = "The name of the subnetwork."
-  default     = "vm1-subnet"
+  default     = "run-ai-agent-subnet"
 }
 
 # Variable for the subnetwork CIDR

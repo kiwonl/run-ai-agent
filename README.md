@@ -42,17 +42,12 @@ terraform apply
     *   `googleapis.com`에 대한 A 레코드를 생성합니다.
     *   `*.googleapis.com`에 대한 CNAME 레코드를 생성합니다.
 
-<!-- C권한 설정
-```bash
-gcloud projects add-iam-policy-binding $GOOGLE_CLOUD_PROJECT \
-    --member=user:$(gcloud config get-value account) \
-    --role='roles/run.invoker'
-``` -->
 
 MCP client 인증을 위한 Token 생성
 
 ```bash
 export PROJECT_NUMBER=$(gcloud projects describe $GOOGLE_CLOUD_PROJECT --format="value(projectNumber)")
+export RUN_SERVICE_ACCOUNT=run-ai-agent-sa
 export ID_TOKEN=$(gcloud auth print-identity-token)
 ```
 
@@ -63,10 +58,11 @@ export ID_TOKEN=$(gcloud auth print-identity-token)
 ```bash
 cd ~/run-ai-agent/run-currency-mcp
 
+## run-ai-agent-vpc-sa@qwiklabs-gcp-04-d28c45915cba.iam.gserviceaccount.com
 gcloud run deploy run-currency-mcpexchange-mcp-server \
     --source . \
     --region ${REGION} \
-    --service-account ${GCP_SERVICE_ACCOUNT}@${PROJECT_ID}.iam.gserviceaccount.com \
+    --service-account ${GCP_SERVICE_ACCOUNT}@${PROJECT_ID}.iam.gserviceaccount.com \    
     --no-allow-unauthenticated \
     --network=gemini-vpc-net \
     --subnet=vm1-subnet \

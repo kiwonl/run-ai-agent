@@ -7,13 +7,13 @@ project_id = "your-gcp-project-id"
 region = "us-central1"
 
 # VPC Network ID
-network_id = "gemini-vpc-net"
+network_id = "run-ai-agent-vpc"
 
 # Service Account ID
-run_service_account = "my-sa"
+run_service_account = "run-ai-agent-sa"
 
 # Subnetwork Name
-subnet_name = "vm1-subnet"
+subnet_name = "run-ai-agent-subnet"
 
 # Subnetwork CIDR
 subnet_cidr = "192.168.100.0/24"
