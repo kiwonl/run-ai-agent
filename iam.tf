@@ -25,3 +25,10 @@ resource "google_project_iam_member" "cloud_build_service_account_user" {
   role    = "roles/iam.serviceAccountUser"
   member  = "serviceAccount:${data.google_project.project.number}-compute@developer.gserviceaccount.com"
 }
+
+# Cloud Build 서비스 계정에 작업을 실행할 권한을 부여합니다.
+resource "google_project_iam_member" "cloud_build_service_account_user" {
+  project = var.project_id
+  role    = "roles/cloudbuild.builds.builder"
+  member  = "serviceAccount:${data.google_project.project.number}-compute@developer.gserviceaccount.com"
+}
