@@ -70,6 +70,7 @@ gcloud run deploy run-weather-mcp-server \
 ## ai-travel-agent
 ```bash
 cd ~/run-ai-agent/run-weather-mcp
+
 adk deploy cloud_run \
   --project=${PROJECT_ID} \
   --region=${REGION} \
@@ -84,3 +85,11 @@ gcloud run services update travel-ai-agent \
   --network=${RUN_NETWORK} \
   --subnet=${RUN_SUBNET} \
 ```
+
+
+python3 -m venv .venv
+
+source .venv/bin/activate
+
+pip install -r requirements.txt
+
