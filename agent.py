@@ -62,7 +62,7 @@ def get_current_time(city:str) -> dict:
             "report": f"""The current time in {city} is {now.strftime("%Y-%m-%d %H:%M:%S %Z%z")}"""}
 
 root_agent = Agent(
-    name="travel-ai-agent",
+    name="greeter",
     model=model_name,
     description="Agent to answer questions about the time and weather in a city.",
     instruction="I can answer your questions about the time and weather in a city.",
