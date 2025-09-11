@@ -18,6 +18,34 @@ load_dotenv()
 
 model_name = os.getenv("GOOGLE_GEMINI_MODEL")
 
+currency_mcp_server = os.getenv("CURRENCY_MCP_SERVER")
+if not currency_mcp_server:
+    raise ValueError("The environment variable CURRENCY_MCP_SERVER is not set.")
+currency_server_toolset = MCPToolset(
+    connection_params=StreamableHTTPConnectionParams(
+        # Use the MCP server URL from the environment variable
+        url=currency_mcp_server,
+        # Use the id_token from the environment variable
+        headers={
+            "Authorization": f"Bearer {get_id_token(currency_mcp_server)}",
+        },
+    )
+)
+
+weather_mcp_server = os.getenv("WEATHER_MCP_SERVER")
+if not weather_mcp_server:
+    raise ValueError("The environment variable WEATHER_MCP_SERVER is not set.")
+weather_server_toolset = MCPToolset(
+    connection_params=StreamableHTTPConnectionParams(
+        # Use the MCP server URL from the environment variable
+        url=weather_mcp_server,
+        # Use the id_token from the environment variable
+        headers={
+            "Authorization": f"Bearer {get_id_token(weather_mcp_server)}",
+        },
+    )
+)
+
 def get_id_token(url):
     """Get an ID token to authenticate with the MCP server."""
     target_url = url
@@ -25,21 +53,6 @@ def get_id_token(url):
     request = google.auth.transport.requests.Request()
     id_token = google.oauth2.id_token.fetch_id_token(request, audience)
     return id_token
-
-currency_mcp_serve = os.getenv("CURRENCY_MCP_SERVER")
-if not currency_mcp_serve:
-    raise ValueError("The environment variable CURRENCY_MCP_SERVER is not set.")
-
-currency_server_toolset = MCPToolset(
-    connection_params=StreamableHTTPConnectionParams(
-        # Use the MCP server URL from the environment variable
-        url=currency_mcp_serve,
-        # Use the id_token from the environment variable
-        headers={
-            "Authorization": f"Bearer {get_id_token(currency_mcp_serve)}",
-        },
-    )
-)
 
 def get_current_time(city:str) -> dict:
     """Returns the current time in a specified city.
@@ -65,6 +78,6 @@ root_agent = Agent(
     name="greeter",
     model=model_name,
     description="Agent to answer questions about the time and weather in a city.",
-    instruction="I can answer your questions about the time and weather in a city.",
-    tools=[currency_server_toolset, get_current_time]
+    instruction="I can answer your questions about the time, weather and currency exchange rates in a city.",
+    tools=[currency_server_toolset, weather_server_toolset, get_current_time]
 )

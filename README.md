@@ -10,6 +10,8 @@ export REGION=us-central1
 
 terraform.tfvars 파일 업데이트
 ```bash
+cd terraform
+
 sed -i \
 -e "s/your-gcp-project-id/$PROJECT_ID/" \
 -e "s/your-region/$REGION/" \
@@ -28,15 +30,6 @@ terraform plan
 terraform apply
 ```
 
-# MCP Servers 배포
-
-```bash
-cd ~/run-ai-agent/run-mcp-currency
-gcloud build submit q
-```
-
-
-
 
 MCP client 인증을 위한 Token 생성
 
@@ -46,28 +39,29 @@ export RUN_NETWORK=run-ai-agent-vpc
 export RUN_SUBNET=run-ai-agent-subnet
 
 export PROJECT_NUMBER=$(gcloud projects describe $GOOGLE_CLOUD_PROJECT --format="value(projectNumber)")
-export ID_TOKEN=$(gcloud auth print-identity-token)
 ```
 
-## run-currency-mcp
-```bash
-cd ~/run-ai-agent/run-currency-mcp
-gcloud run deploy run-currency-mcp-server \
-    --source . \
-    --region ${REGION} \
-    --service-account ${RUN_SERVICE_ACCOUNT}@${PROJECT_ID}.iam.gserviceaccount.com \
-    --no-allow-unauthenticated \
-    --network=${RUN_NETWORK} \
-    --subnet=${RUN_SUBNET} \
-    --vpc-egress=all-traffic
-```
+# MCP Servers 배포
 
-## run-weather-mcp
+## currency-mcp-server
 ```bash
-cd ~/run-ai-agent/run-weather-mcp
+cd ~/run-ai-agent/mcp-server-currency
 gcloud run deploy currency-mcp-server \
     --source . \
     --region ${REGION} \
+    --service-account ${RUN_SERVICE_ACCOUNT}@${PROJECT_ID}.iam.gserviceaccount.com \
+    --no-allow-unauthenticated \
+    --network=${RUN_NETWORK} \
+    --subnet=${RUN_SUBNET} \
+    --vpc-egress=all-traffic
+```
+
+## weather-mcp-server
+```bash
+cd ~/run-ai-agent/mcp-server-weather
+gcloud run deploy weather-mcp-server \
+    --source . \
+    --region ${REGION} \
     --no-allow-unauthenticated \
     --service-account ${RUN_SERVICE_ACCOUNT}@${PROJECT_ID}.iam.gserviceaccount.com \
     --network=${RUN_NETWORK} \
@@ -75,9 +69,9 @@ gcloud run deploy currency-mcp-server \
     --vpc-egress=all-traffic
 ```
 
-## ai-travel-agent
+# AI Agent 배포
 ```bash
-cd ~/run-ai-agent/run-weather-mcp
+cd ~/run-ai-agent
 
 adk deploy cloud_run \
   --project=${PROJECT_ID} \
@@ -93,11 +87,3 @@ gcloud run services update travel-ai-agent \
   --subnet=${RUN_SUBNET}  \
   --vpc-egress=all-traffic
 ```
-
-
-python3 -m venv .venv
-
-source .venv/bin/activate
-
-pip install -r requirements.txt
-
