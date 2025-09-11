@@ -22,17 +22,17 @@ def get_id_token(url):
     id_token = google.oauth2.id_token.fetch_id_token(request, audience)
     return id_token
 
-weather_mcp_server_url = os.getenv("WEATHER_MCP_SERVER")
-if not weather_mcp_server_url:
-    raise ValueError("The environment variable WEATHER_MCP_SERVER is not set.")
+currency_mcp_serve = os.getenv("CURRNECY_MCP_SERVER")
+if not currency_mcp_serve:
+    raise ValueError("The environment variable CURRNECY_MCP_SERVER is not set.")
 
-weather_server_toolset = MCPToolset(
+currency_server_toolset = MCPToolset(
     connection_params=StreamableHTTPConnectionParams(
         # Use the MCP server URL from the environment variable
-        url=weather_mcp_server_url,
+        url=currency_mcp_serve,
         # Use the id_token from the environment variable
         headers={
-            "Authorization": f"Bearer {get_id_token(weather_mcp_server_url)}",
+            "Authorization": f"Bearer {get_id_token(currency_mcp_serve)}",
         },
     )
 )
@@ -62,5 +62,5 @@ root_agent = Agent(
     model=model_name,
     description="Agent to answer questions about the time and weather in a city.",
     instruction="I can answer your questions about the time and weather in a city.",
-    tools=[weather_server_toolset, get_current_time]
+    tools=[currency_mcp_serve, get_current_time]
 )
