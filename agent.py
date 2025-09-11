@@ -7,6 +7,10 @@ from google.adk.agents import Agent
 from google.adk.agents import SequentialAgent
 from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset, StreamableHTTPConnectionParams
 
+import google.auth
+import google.auth.transport.requests
+import google.oauth2.id_token
+
 cloud_logging_client = google.cloud.logging.Client()
 cloud_logging_client.setup_logging()
 
@@ -22,9 +26,9 @@ def get_id_token(url):
     id_token = google.oauth2.id_token.fetch_id_token(request, audience)
     return id_token
 
-currency_mcp_serve = os.getenv("CURRNECY_MCP_SERVER")
+currency_mcp_serve = os.getenv("CURRENCY_MCP_SERVER")
 if not currency_mcp_serve:
-    raise ValueError("The environment variable CURRNECY_MCP_SERVER is not set.")
+    raise ValueError("The environment variable CURRENCY_MCP_SERVER is not set.")
 
 currency_server_toolset = MCPToolset(
     connection_params=StreamableHTTPConnectionParams(
