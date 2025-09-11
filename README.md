@@ -33,11 +33,11 @@ terraform apply
 MCP client 인증을 위한 Token 생성
 
 ```bash
-export PROJECT_NUMBER=$(gcloud projects describe $GOOGLE_CLOUD_PROJECT --format="value(projectNumber)")
 export RUN_SERVICE_ACCOUNT=run-ai-agent-sa
 export RUN_NETWORK=run-ai-agent-vpc
 export RUN_SUBNET=run-ai-agent-subnet
 
+export PROJECT_NUMBER=$(gcloud projects describe $GOOGLE_CLOUD_PROJECT --format="value(projectNumber)")
 export ID_TOKEN=$(gcloud auth print-identity-token)
 ```
 
@@ -57,11 +57,11 @@ gcloud run deploy run-currency-mcp-server \
 ## run-weather-mcp
 ```bash
 cd ~/run-ai-agent/run-weather-mcp
-gcloud run deploy run-weather-mcp-server \
+gcloud run deploy currency-mcp-server \
     --source . \
     --region ${REGION} \
-    --service-account ${RUN_SERVICE_ACCOUNT}@${PROJECT_ID}.iam.gserviceaccount.com \
     --no-allow-unauthenticated \
+    --service-account ${RUN_SERVICE_ACCOUNT}@${PROJECT_ID}.iam.gserviceaccount.com \
     --network=${RUN_NETWORK} \
     --subnet=${RUN_SUBNET} \
     --vpc-egress=all-traffic
