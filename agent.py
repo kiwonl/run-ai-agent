@@ -14,11 +14,6 @@ import google.auth
 import google.auth.transport.requests
 import google.oauth2.id_token
 
-cloud_logging_client = google.cloud.logging.Client()
-cloud_logging_client.setup_logging()
-
-load_dotenv()
-
 
 def get_id_token(url):
     """Get an ID token to authenticate with the MCP server."""
@@ -27,6 +22,12 @@ def get_id_token(url):
     request = google.auth.transport.requests.Request()
     id_token = google.oauth2.id_token.fetch_id_token(request, audience)
     return id_token
+
+
+cloud_logging_client = google.cloud.logging.Client()
+cloud_logging_client.setup_logging()
+
+load_dotenv()
 
 
 model_name = os.getenv("GOOGLE_GEMINI_MODEL")
