@@ -13,12 +13,13 @@ from google.adk.tools.mcp_tool.mcp_toolset import (
 import google.auth
 import google.auth.transport.requests
 import google.oauth2.id_token
+from urllib.parse import urlparse
 
 
 def get_id_token(url):
     """Get an ID token to authenticate with the MCP server."""
-    target_url = url
-    audience = target_url.split("/mcp/")[0]
+    parsed_url = urlparse(url)
+    audience = f"{parsed_url.scheme}://{parsed_url.netloc}"
     request = google.auth.transport.requests.Request()
     id_token = google.oauth2.id_token.fetch_id_token(request, audience)
     return id_token
