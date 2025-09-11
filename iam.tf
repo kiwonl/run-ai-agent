@@ -16,7 +16,7 @@ resource "google_project_iam_member" "ai_platform_user" {
 resource "google_project_iam_member" "cloud_build_run_admin" {
   project = var.project_id
   role    = "roles/run.admin"
-  member  = "serviceAccount:${data.google_project.project.number}@cloudbuild.gserviceaccount.com"
+  member  = "serviceAccount:${data.google_project.project.number}-compute@developer.gserviceaccount.com"
   depends_on = [
     google_project_service.default["cloudbuild.googleapis.com"]
   ]
@@ -26,7 +26,7 @@ resource "google_project_iam_member" "cloud_build_run_admin" {
 resource "google_project_iam_member" "cloud_build_service_account_user" {
   project = var.project_id
   role    = "roles/iam.serviceAccountUser"
-  member  = "serviceAccount:${data.google_project.project.number}@cloudbuild.gserviceaccount.com"
+  member  = "serviceAccount:${data.google_project.project.number}-compute@developer.gserviceaccount.com"
   depends_on = [
     google_project_service.default["cloudbuild.googleapis.com"]
   ]
