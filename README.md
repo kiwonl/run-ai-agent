@@ -45,9 +45,8 @@ export PROJECT_NUMBER=$(gcloud projects describe $GOOGLE_CLOUD_PROJECT --format=
 
 ## currency-mcp-server
 ```bash
-cd ~/run-ai-agent/mcp-server-currency
 gcloud run deploy currency-mcp-server \
-    --source . \
+    --source ./mcp-server-currency/ \
     --region ${REGION} \
     --service-account ${RUN_SERVICE_ACCOUNT}@${PROJECT_ID}.iam.gserviceaccount.com \
     --no-allow-unauthenticated \
@@ -58,9 +57,8 @@ gcloud run deploy currency-mcp-server \
 
 ## weather-mcp-server
 ```bash
-cd ~/run-ai-agent/mcp-server-weather
 gcloud run deploy weather-mcp-server \
-    --source . \
+    --source ./mcp-server-weather/ \
     --region ${REGION} \
     --no-allow-unauthenticated \
     --service-account ${RUN_SERVICE_ACCOUNT}@${PROJECT_ID}.iam.gserviceaccount.com \
@@ -71,8 +69,6 @@ gcloud run deploy weather-mcp-server \
 
 # AI Agent 배포
 ```bash
-cd ~/run-ai-agent
-
 adk deploy cloud_run \
   --project=${PROJECT_ID} \
   --region=${REGION} \
