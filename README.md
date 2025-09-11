@@ -79,11 +79,11 @@ adk deploy cloud_run \
   .
 
 gcloud run services update travel-ai-agent \
-  --region=europe-west1 \
-  --update-labels=dev-tutorial=codelab-adk
-  --no-allow-unauthenticated \
+  --region=${REGION} \
+  --service-account ${RUN_SERVICE_ACCOUNT}@${PROJECT_ID}.iam.gserviceaccount.com \
   --network=${RUN_NETWORK} \
-  --subnet=${RUN_SUBNET} \
+  --subnet=${RUN_SUBNET}  \
+  --vpc-egress=all-traffic
 ```
 
 
