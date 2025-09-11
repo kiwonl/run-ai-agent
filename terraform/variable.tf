@@ -39,3 +39,10 @@ variable "subnet_cidr" {
   description = "The CIDR block for the subnetwork."
   default     = "192.168.100.0/24"
 }
+
+# Variable for the Docker repository ID
+variable "docker_repository_id" {
+  type        = string
+  description = "The ID of the Docker repository."
+  default     = "docker-repo"
+}

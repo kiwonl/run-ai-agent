@@ -66,5 +66,5 @@ root_agent = Agent(
     model=model_name,
     description="Agent to answer questions about the time and weather in a city.",
     instruction="I can answer your questions about the time and weather in a city.",
-    tools=[currency_mcp_serve, get_current_time]
+    tools=[currency_server_toolset, get_current_time]
 )

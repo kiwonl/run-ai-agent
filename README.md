@@ -4,7 +4,7 @@
 
 환경변수 설정
 ```bash
-export PROJECT_ID=         //qwiklabs-gcp-00-90a5c37a7501
+export PROJECT_ID=
 export REGION=us-central1
 ```
 
@@ -29,6 +29,14 @@ terraform apply
 ```
 
 # MCP Servers 배포
+
+```bash
+cd ~/run-ai-agent/run-mcp-currency
+gcloud build submit q
+```
+
+
+
 
 MCP client 인증을 위한 Token 생성
 
