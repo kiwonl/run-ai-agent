@@ -3,100 +3,141 @@ import logging
 import google.cloud.logging
 from dotenv import load_dotenv
 
-from google.adk.agents import Agent
+from google.adk import Agent
 from google.adk.agents import SequentialAgent
 from google.adk.tools.mcp_tool.mcp_toolset import (
     MCPToolset,
     StreamableHTTPConnectionParams,
 )
+from google.adk.tools.tool_context import ToolContext
+from google.adk.tools.langchain_tool import LangchainTool
+
+from langchain_community.tools import WikipediaQueryRun
+from langchain_community.utilities import WikipediaAPIWrapper
 
 import google.auth
 import google.auth.transport.requests
 import google.oauth2.id_token
-from urllib.parse import urlparse
 
-
-def get_id_token(url):
-    """Get an ID token to authenticate with the MCP server."""
-    parsed_url = urlparse(url)
-    audience = f"{parsed_url.scheme}://{parsed_url.netloc}"
-    request = google.auth.transport.requests.Request()
-    id_token = google.oauth2.id_token.fetch_id_token(request, audience)
-    return id_token
-
+# --- Setup Logging and Environment ---
 
 cloud_logging_client = google.cloud.logging.Client()
 cloud_logging_client.setup_logging()
 
 load_dotenv()
 
+model_name = os.getenv("MODEL")
 
-model_name = os.getenv("GOOGLE_GEMINI_MODEL")
+# Greet user and save their prompt
 
-currency_mcp_server = os.getenv("CURRENCY_MCP_SERVER")
-if not currency_mcp_server:
-    raise ValueError("The environment variable CURRENCY_MCP_SERVER is not set.")
-if not currency_mcp_server.endswith("/mcp/"):
-    currency_mcp_server = currency_mcp_server.rstrip("/") + "/mcp/"
 
-currency_server_toolset = MCPToolset(
+def add_prompt_to_state(tool_context: ToolContext, prompt: str) -> dict[str, str]:
+    """Saves the user's initial prompt to the state."""
+    tool_context.state["PROMPT"] = prompt
+    logging.info(f"[State updated] Added to PROMPT: {prompt}")
+    return {"status": "success"}
+
+
+# Configuring the MCP Tool to connect to the Zoo MCP server
+
+mcp_server_url = os.getenv("MCP_SERVER_URL")
+if not mcp_server_url:
+    raise ValueError("The environment variable MCP_SERVER_URL is not set.")
+
+
+def get_id_token():
+    """Get an ID token to authenticate with the MCP server."""
+    target_url = os.getenv("MCP_SERVER_URL")
+    audience = target_url.split("/mcp/")[0]
+    request = google.auth.transport.requests.Request()
+    id_token = google.oauth2.id_token.fetch_id_token(request, audience)
+    return id_token
+
+
+"""
+# Use this code if you are using the public MCP Server and comment out the code below defining mcp_tools
+mcp_tools = MCPToolset(
     connection_params=StreamableHTTPConnectionParams(
-        # Use the MCP server URL from the environment variable
-        url=currency_mcp_server,
-        # Use the id_token from the environment variable
-        headers={
-            "Authorization": f"Bearer {get_id_token(currency_mcp_server)}",
-        },
+        url=mcp_server_url
     )
 )
+"""
 
-weather_mcp_server = os.getenv("WEATHER_MCP_SERVER")
-if not weather_mcp_server:
-    raise ValueError("The environment variable WEATHER_MCP_SERVER is not set.")
-if not weather_mcp_server.endswith("/mcp/"):
-    weather_mcp_server = weather_mcp_server.rstrip("/") + "/mcp/"
-
-weather_server_toolset = MCPToolset(
+mcp_tools = MCPToolset(
     connection_params=StreamableHTTPConnectionParams(
-        # Use the MCP server URL from the environment variable
-        url=weather_mcp_server,
-        # Use the id_token from the environment variable
+        url=mcp_server_url,
         headers={
-            "Authorization": f"Bearer {get_id_token(weather_mcp_server)}",
+            "Authorization": f"Bearer {get_id_token()}",
         },
-    )
+    ),
 )
 
+# Configuring the Wikipedia Tool
+wikipedia_tool = LangchainTool(
+    tool=WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper())
+)
 
-def get_current_time(city: str) -> dict:
-    """Returns the current time in a specified city.
+# 1. Researcher Agent
+comprehensive_researcher = Agent(
+    name="comprehensive_researcher",
+    model=model_name,
+    description="The primary researcher that can access both internal zoo data and external knowledge from Wikipedia.",
+    instruction="""
+    You are a helpful research assistant. Your goal is to fully answer the user's PROMPT.
+    You have access to two tools:
+    1. A tool for getting specific data about animals AT OUR ZOO (names, ages, locations).
+    2. A tool for searching Wikipedia for general knowledge (facts, lifespan, diet, habitat).
 
-    Args:
-        dict: A dictionary containing the current time for a specified city information with a 'status' key ('success' or 'error') and a 'report' key with the current time details in a city if successful, or an 'error_message' if an error occurred.
-    """
-    import datetime
-    from zoneinfo import ZoneInfo
+    First, analyze the user's PROMPT.
+    - If the prompt can be answered by only one tool, use that tool.
+    - If the prompt is complex and requires information from both the zoo's database AND Wikipedia,
+      you MUST use both tools to gather all necessary information.
+    - Synthesize the results from the tool(s) you use into preliminary data outputs.
 
-    if city.lower() == "new york":
-        tz_identifier = "America/New_York"
-    else:
-        return {
-            "status": "error",
-            "error_message": f"Sorry, I don't have timezone information for {city}.",
-        }
+    PROMPT:
+    {{ PROMPT }}
+    """,
+    tools=[mcp_tools, wikipedia_tool],
+    output_key="research_data",  # A key to store the combined findings
+)
 
-    tz = ZoneInfo(tz_identifier)
-    now = datetime.datetime.now(tz)
-    return {
-        "status": "success",
-        "report": f"""The current time in {city} is {now.strftime("%Y-%m-%d %H:%M:%S %Z%z")}""",
-    }
+# 2. Response Formatter Agent
+response_formatter = Agent(
+    name="response_formatter",
+    model=model_name,
+    description="Synthesizes all information into a friendly, readable response.",
+    instruction="""
+    You are the friendly voice of the Zoo Tour Guide. Your task is to take the
+    RESEARCH_DATA and present it to the user in a complete and helpful answer.
 
+    - First, present the specific information from the zoo (like names, ages, and where to find them).
+    - Then, add the interesting general facts from the research.
+    - If some information is missing, just present the information you have.
+    - Be conversational and engaging.
+
+    RESEARCH_DATA:
+    {{ research_data }}
+    """,
+)
+
+tour_guide_workflow = SequentialAgent(
+    name="tour_guide_workflow",
+    description="The main workflow for handling a user's request about an animal.",
+    sub_agents=[
+        comprehensive_researcher,  # Step 1: Gather all data
+        response_formatter,  # Step 2: Format the final response
+    ],
+)
 
 root_agent = Agent(
     name="greeter",
     model=model_name,
-    description="Agent to answer questions about the time and weather in a city.",
-    instruction="I can answer your questions about the time, weather and currency exchange rates in a city.",
-    tools=[currency_server_toolset, weather_server_toolset, get_current_time],
+    description="The main entry point for the Zoo Tour Guide.",
+    instruction="""
+    - Let the user know you will help them learn about the animals we have in the zoo.
+    - When the user responds, use the 'add_prompt_to_state' tool to save their response.
+    After using the tool, transfer control to the 'tour_guide_workflow' agent.
+    """,
+    tools=[add_prompt_to_state],
+    sub_agents=[tour_guide_workflow],
 )

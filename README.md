@@ -43,25 +43,13 @@ export PROJECT_NUMBER=$(gcloud projects describe $GOOGLE_CLOUD_PROJECT --format=
 
 # MCP Servers 배포
 
-## currency-mcp-server
+## zoo-mcp-server
 ```bash
 gcloud run deploy currency-mcp-server \
-    --source ./mcp-server-currency/ \
+    --source ./zoo-mcp-server/ \
     --region ${REGION} \
     --service-account ${RUN_SERVICE_ACCOUNT}@${PROJECT_ID}.iam.gserviceaccount.com \
     --no-allow-unauthenticated \
-    --network=${RUN_NETWORK} \
-    --subnet=${RUN_SUBNET} \
-    --vpc-egress=all-traffic
-```
-
-## weather-mcp-server
-```bash
-gcloud run deploy weather-mcp-server \
-    --source ./mcp-server-weather/ \
-    --region ${REGION} \
-    --no-allow-unauthenticated \
-    --service-account ${RUN_SERVICE_ACCOUNT}@${PROJECT_ID}.iam.gserviceaccount.com \
     --network=${RUN_NETWORK} \
     --subnet=${RUN_SUBNET} \
     --vpc-egress=all-traffic
@@ -83,3 +71,8 @@ gcloud run services update travel-ai-agent \
   --subnet=${RUN_SUBNET}  \
   --vpc-egress=all-traffic
 ```
+
+
+Reference
+- MCP Server: https://codelabs.developers.google.com/codelabs/cloud-run/how-to-deploy-a-secure-mcp-server-on-cloud-run?hl=ko#6
+- AI Agent : https://codelabs.developers.google.com/codelabs/cloud-run/use-mcp-server-on-cloud-run-with-an-adk-agent?hl=ko#0
