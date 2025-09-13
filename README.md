@@ -1,119 +1,114 @@
-# AI Agent 인프라 환경 세팅
+# AI Agent Infrastructure Setup
 
-## 환경설정
+## Overview
 
-환경변수 설정
-```bash
-export PROJECT_ID=
-export REGION=us-central1
-```
+This project provides a comprehensive setup for deploying a sophisticated AI agent on Google Cloud. The agent is designed to be a "Zoo Tour Guide," capable of answering questions about animals in a fictional zoo. It leverages a custom-built MCP (Multi-turn Conversation Platform) server for zoo-specific data and Wikipedia for general knowledge. The entire infrastructure is managed using Terraform, and the agent is deployed on Cloud Run.
 
-terraform.tfvars 파일 업데이트
-```bash
-cd ~/run-ai-agent/terraform
+## Features
 
-sed -i \
--e "s/your-gcp-project-id/$PROJECT_ID/" \
--e "s/your-region/$REGION/" \
-terraform.tfvars
-```
+- **AI Agent:** A conversational AI agent built with the Google ADK (Agent Development Kit).
+- **MCP Server:** A custom MCP server built with FastAPI that provides data about the zoo's animals. This server is deployed on Cloud Run and is only accessible from within the project's VPC.
+- **Terraform Automation:** The entire Google Cloud infrastructure is provisioned using Terraform.
+- **Cloud Run Deployment:** Both the AI agent and the MCP server are deployed as serverless applications on Cloud Run.
+- **Secure Communication:** The agent communicates securely with the MCP server using ID tokens.
 
-## Terraform
+## Architecture
 
-```bash
-terraform init
-```
-```bash
-terraform plan
-```
-```bash
-terraform apply
-```
+The project consists of three main components:
 
-Outputs:
-```
-network_name = "run-ai-agent-vpc"
-service_account_account_id = "run-ai-agent-sa"
-service_account_display_name = "google_service_account"
-service_account_email = "run-ai-agent-sa@qwiklabs-gcp-02-c885537ad9e1.iam.gserviceaccount.com"
-subnetwork_name = "run-ai-agent-subnet"
-```
+1.  **Zoo MCP Server:** A Python server that exposes a set of tools for querying information about the zoo's animals. This server is deployed on Cloud Run and is only accessible from within the project's VPC.
+2.  **AI Agent:** A Python application that uses the Google ADK to create a multi-agent system. The agent can reason about when to use the MCP server for zoo-specific data and when to use Wikipedia for general knowledge. The agent is also deployed on Cloud Run.
+3.  **Terraform:** A set of Terraform scripts that define and provision all the necessary Google Cloud resources, including the VPC, subnets, service accounts, and API enablement.
 
-### 생성되는 리소스
+## Getting Started
 
-- **google_project_service**
-  - `servicedirectory.googleapis.com`
-  - `dns.googleapis.com`
-  - `run.googleapis.com`
-  - `aiplatform.googleapis.com`
-  - `artifactregistry.googleapis.com`
-  - `cloudbuild.googleapis.com`
-- **google_project_iam_member**
-  - `cloud_build_run_admin`
-  - `cloud_build_builds_builder`
-  - `cloud_build_service_account_user`
-  - `ai_platform_user`
-- **google_compute_network**: `default`
-- **google_service_account**: `sa`
-- **google_compute_global_address**: `default`
-- **google_compute_subnetwork**: `default`
-- **google_compute_router**: `default`
-- **google_dns_managed_zone**: `private_zone`
-- **google_dns_record_set**
-  - `cname_record`
-  - `a_record`
-- **google_compute_global_forwarding_rule**: `default`
-- **google_compute_router_nat**: `default`
+### Prerequisites
 
-MCP client 인증을 위한 Token 생성
+- [Google Cloud SDK](https://cloud.google.com/sdk/docs/install)
+- [Terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli)
+- [Python 3.10+](https://www.python.org/downloads/)
 
-```bash
-export RUN_SERVICE_ACCOUNT=run-ai-agent-sa
-export RUN_NETWORK=run-ai-agent-vpc
-export RUN_SUBNET=run-ai-agent-subnet
+### Installation
 
-export PROJECT_NUMBER=$(gcloud projects describe $GOOGLE_CLOUD_PROJECT --format="value(projectNumber)")
-```
+1.  **Set up environment variables:**
 
-# Zoo MCP server 배포
-```bash
-cd ~/run-ai-agent/
+    ```bash
+    export PROJECT_ID=<your-gcp-project-id>
+    export REGION=us-central1
+    ```
 
-gcloud run deploy zoo-mcp-server \
-    --source ./zoo-mcp-server/ \
-    --region ${REGION} \
-    --service-account ${RUN_SERVICE_ACCOUNT}@${PROJECT_ID}.iam.gserviceaccount.com \
-    --no-allow-unauthenticated \
-    --network=${RUN_NETWORK} \
-    --subnet=${RUN_SUBNET} \
-    --vpc-egress=all-traffic
-```
-# Google ADK 설치
-https://google.github.io/adk-docs/get-started/installation/
-```bash
-$ python3 -m venv .venv
-$ source .venv/bin/activate
-$ pip install google-adk
-```
+2.  **Update `terraform.tfvars`:**
 
-# AI Agent 배포
-```bash
-adk deploy cloud_run \
-  --project=${PROJECT_ID} \
-  --region=${REGION} \
-  --service_name=zoo-tour-guide \
-  --with_ui \
-  .
+    ```bash
+    cd terraform
+    sed -i \
+    -e "s/your-gcp-project-id/$PROJECT_ID/"
+    -e "s/your-region/$REGION/"
+    terraform.tfvars
+    ```
 
-gcloud run services update travel-ai-agent \
-  --region=${REGION} \
-  --service-account ${RUN_SERVICE_ACCOUNT}@${PROJECT_ID}.iam.gserviceaccount.com \
-  --network=${RUN_NETWORK} \
-  --subnet=${RUN_SUBNET}  \
-  --vpc-egress=all-traffic
-```
+3.  **Initialize and apply Terraform:**
 
+    ```bash
+    terraform init
+    terraform plan
+    terraform apply
+    ```
 
-Reference
-- MCP Server: https://codelabs.developers.google.com/codelabs/cloud-run/how-to-deploy-a-secure-mcp-server-on-cloud-run?hl=ko#6
-- AI Agent : https://codelabs.developers.google.com/codelabs/cloud-run/use-mcp-server-on-cloud-run-with-an-adk-agent?hl=ko#0
+    Take note of the outputs, especially the `service_account_email`.
+
+### Deployment
+
+1.  **Deploy the Zoo MCP Server:**
+
+    ```bash
+    cd ..
+    gcloud run deploy zoo-mcp-server \
+        --source ./zoo-mcp-server/ \
+        --region ${REGION} \
+        --service-account <your-service-account-email> \
+        --no-allow-unauthenticated \
+        --network=<your-vpc-name> \
+        --subnet=<your-subnet-name> \
+        --vpc-egress=all-traffic
+    ```
+
+2. Update .env file
+    ``` bash
+    echo -e "\nMCP_SERVER_URL=https://zoo-mcp-server-${PROJECT_NUMBER}.${REGION}.run.app/mcp/" >> .env
+    ```
+
+2.  **Install the Google ADK:**
+
+    ```bash
+    python3 -m venv .venv
+    source .venv/bin/activate
+    pip install google-adk
+    ```
+
+3.  **Deploy the AI Agent:**
+
+    ```bash
+    adk deploy cloud_run \
+      --project=${PROJECT_ID} \
+      --region=${REGION} \
+      --service_name=zoo-tour-guide \
+      --with_ui \
+      .
+
+    gcloud run services update zoo-tour-guide \
+      --region=${REGION} \
+      --service-account <your-service-account-email> \
+      --network=<your-vpc-name> \
+      --subnet=<your-subnet-name>  \
+      --vpc-egress=all-traffic
+    ```
+
+## Usage
+
+Once the AI agent is deployed, you can interact with it through the UI provided by the `adk deploy` command. The URL for the UI will be printed in the console after the deployment is complete.
+
+## References
+
+- [MCP Server Codelab](https://codelabs.developers.google.com/codelabs/cloud-run/how-to-deploy-a-secure-mcp-server-on-cloud-run?hl=ko#6)
+- [AI Agent Codelab](https://codelabs.developers.google.com/codelabs/cloud-run/use-mcp-server-on-cloud-run-with-an-adk-agent?hl=ko#0)

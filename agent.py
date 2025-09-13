@@ -29,8 +29,6 @@ load_dotenv()
 model_name = os.getenv("MODEL")
 
 # Greet user and save their prompt
-
-
 def add_prompt_to_state(tool_context: ToolContext, prompt: str) -> dict[str, str]:
     """Saves the user's initial prompt to the state."""
     tool_context.state["PROMPT"] = prompt
@@ -38,8 +36,7 @@ def add_prompt_to_state(tool_context: ToolContext, prompt: str) -> dict[str, str
     return {"status": "success"}
 
 
-# Configuring the MCP Tool to connect to the Zoo MCP server
-
+# 동물원 MCP 서버에 연결하도록 MCP 도구 구성
 mcp_server_url = os.getenv("MCP_SERVER_URL")
 if not mcp_server_url:
     raise ValueError("The environment variable MCP_SERVER_URL is not set.")
@@ -62,7 +59,7 @@ mcp_tools = MCPToolset(
     )
 )
 """
-
+# MCP Server Tool 설정
 mcp_tools = MCPToolset(
     connection_params=StreamableHTTPConnectionParams(
         url=mcp_server_url,
@@ -120,6 +117,7 @@ response_formatter = Agent(
     """,
 )
 
+# Sequancial Agent Workflow
 tour_guide_workflow = SequentialAgent(
     name="tour_guide_workflow",
     description="The main workflow for handling a user's request about an animal.",
@@ -129,6 +127,7 @@ tour_guide_workflow = SequentialAgent(
     ],
 )
 
+# Root Agent
 root_agent = Agent(
     name="greeter",
     model=model_name,
