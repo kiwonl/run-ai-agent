@@ -12,6 +12,13 @@ resource "google_project_iam_member" "ai_platform_user" {
   member  = "serviceAccount:${google_service_account.sa.email}"
 }
 
+# Cloud Run 서비스 계정에 Cloud Run 호출자 역할을 부여합니다.
+resource "google_project_iam_member" "run_invoker" {
+  project = var.project_id
+  role    = "roles/run.invoker"
+  member  = "serviceAccount:${google_service_account.sa.email}"
+}
+
 # Cloud Build 서비스 계정에 Cloud Run 관리자 역할을 부여합니다.
 resource "google_project_iam_member" "cloud_build_run_admin" {
   project = var.project_id
